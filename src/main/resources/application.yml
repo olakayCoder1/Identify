@@ -1,0 +1,40 @@
+server:
+    port: 8080
+    error:
+        include-message: always
+
+spring:
+
+    datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        username: root
+        url: jdbc:mysql://localhost:3306/identity
+        password: olakay@pyDev1
+    jpa:
+        hibernate:
+            ddl-auto: create-drop
+        show-sql: true
+        open-in-view: true
+
+    mail:
+        host: smtp.gmail.com
+        username: programmerolakay@gmail.com
+        password: xsivhbybtzhuwvul
+        port: 587
+        properties:
+          mail:
+            smtp:
+              starttls:
+                enable: true
+              auth: true
+
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+
+
+
+  
