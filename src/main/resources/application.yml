@@ -12,7 +12,8 @@ spring:
         password: olakay@pyDev1
     jpa:
         hibernate:
-            ddl-auto: create-drop
+            ddl-auto: update
+            # ddl-auto: create-drop
         show-sql: true
         open-in-view: true
 

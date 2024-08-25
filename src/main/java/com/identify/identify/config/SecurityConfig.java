@@ -42,8 +42,9 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(req ->
                         req.requestMatchers(WHITE_LIST_URL).permitAll()
-                        .requestMatchers("/api/v1/urls").hasRole("USER")
-                        .requestMatchers("/api/v1/urls/**")
+                        .requestMatchers("/api/v1/identity/**")
+                        // .hasRole("USER")
+                        // .requestMatchers("/api/v1/urls/**")
                         .authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))

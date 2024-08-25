@@ -1,4 +1,4 @@
-package com.identify.identify.dto;
+package com.identify.identify.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

@@ -12,12 +12,12 @@ public class EmailSender {
     private JavaMailSender emailSender;
 
 
-    public String sendAccountVerificationMial(String receiver){
+    public String sendAccountVerificationMial(String receiver, String code){
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("your_email@example.com");
         message.setTo(receiver);
         message.setSubject("Account activation mail");
-        message.setText("text");
+        message.setText("Your acount activation code is " + code);
 
         emailSender.send(message);
         return "";

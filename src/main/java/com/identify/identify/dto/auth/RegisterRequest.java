@@ -1,8 +1,7 @@
-package com.identify.identify.dto;
+package com.identify.identify.dto.auth;
 
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
@@ -29,8 +28,7 @@ public class RegisterRequest {
     @Size(min = 2, max = 30, message = "Last name must be between 2 and 30 characters")
     private String lastName;
 
-    @NotNull(message = "Name cannot be null")
-    @NotBlank(message = "Name cannot be blank")
+    @NotNull(message = "Password cannot be null or blank")
     @Size(min = 8, message = "Password must be atleast 8 characters")
     private String password;
 }

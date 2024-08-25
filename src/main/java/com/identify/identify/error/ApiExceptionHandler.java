@@ -9,12 +9,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class ApiExceptionHandler {
     
-    @ExceptionHandler( value = {ApiRequestException.class})
-    public ResponseEntity<Object> handleApiException(ApiRequestException e){
-        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
-        ApiExeption apiExeption = new ApiExeption(e.getMessage(), HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(ApiRequestException.class)
+    public ResponseEntity<ErrorResponse> handleEmailAlreadyInUseException(ApiRequestException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
 
-        return new ResponseEntity<>(apiExeption,badRequest);
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        ErrorResponse errorResponse = new ErrorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
 

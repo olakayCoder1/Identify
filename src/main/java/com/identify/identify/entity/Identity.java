@@ -31,6 +31,8 @@ public class Identity {
 
     public String idType;
 
+    public String idNumber;
+
     public String record;
 
     public boolean isActive;

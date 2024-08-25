@@ -3,10 +3,12 @@ package com.identify.identify.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.identify.identify.dto.AuthenticationRequest;
-import com.identify.identify.dto.AuthenticationResponse;
-import com.identify.identify.dto.RegisterRequest;
-import com.identify.identify.helper.mail.EmailSender;
+import com.identify.identify.dto.SuccessResponse;
+import com.identify.identify.dto.auth.AccountAtivationRequest;
+import com.identify.identify.dto.auth.AuthenticationRequest;
+import com.identify.identify.dto.auth.AuthenticationResponse;
+import com.identify.identify.dto.auth.RegisterRequest;
+import com.identify.identify.dto.auth.RegisterResponse;
 import com.identify.identify.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -15,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,8 +47,27 @@ public class AuthController {
                         )));
                 return ResponseEntity.badRequest().body(errors);
             }
-        return ResponseEntity.ok(authService.register(request));
+            
+        RegisterResponse result = authService.register(request);
+        SuccessResponse successResponse = new SuccessResponse(result.getMessage(), result.getData()); // Replace null with any additional data if needed
+        return ResponseEntity.ok(successResponse);
     }
+
+    @PostMapping("/verify")
+    public ResponseEntity<Object> accountActivate(@RequestBody @Valid AccountAtivationRequest request,BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+                // Convert errors to a more readable format
+                Map<String, Object> errors = new HashMap<>();
+                errors.put("errors", bindingResult.getFieldErrors().stream()
+                        .collect(Collectors.toMap(
+                                error -> error.getField(),
+                                error -> error.getDefaultMessage()
+                        )));
+                return ResponseEntity.badRequest().body(errors);
+            }
+        return ResponseEntity.ok(authService.accountActivate(request));
+    }
+
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> authlogin(

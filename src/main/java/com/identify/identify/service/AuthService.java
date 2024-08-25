@@ -8,15 +8,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.identify.identify.dto.AuthenticationRequest;
-import com.identify.identify.dto.AuthenticationResponse;
-import com.identify.identify.dto.RegisterRequest;
+import com.identify.identify.dto.auth.AccountAtivationRequest;
+import com.identify.identify.dto.auth.AuthenticationRequest;
+import com.identify.identify.dto.auth.AuthenticationResponse;
+import com.identify.identify.dto.auth.RegisterRequest;
+import com.identify.identify.dto.auth.RegisterResponse;
 import com.identify.identify.entity.ActivationCode;
 import com.identify.identify.entity.Role;
 import com.identify.identify.entity.User;
 import com.identify.identify.error.ApiRequestException;
 import com.identify.identify.helper.mail.EmailSender;
 import com.identify.identify.repository.UserRepository;
+
+import jakarta.validation.Valid;
+
 import com.identify.identify.repository.ActivationCodeRepository;
 
 
@@ -40,9 +45,10 @@ public class AuthService {
 
 
     private final AuthenticationManager authenticationManager;
+   
+
     
-    
-    public ResponseEntity register(RegisterRequest request) {
+    public RegisterResponse register(RegisterRequest request) {
 
         // Check if email already exists
         if (repository.findByEmail(request.getEmail()).isPresent()) {
@@ -65,12 +71,63 @@ public class AuthService {
 
         // var jwtToken = jwtService.generateToken(user);
 
-        emailService.sendAccountVerificationMial(request.getEmail());
+        String activationCode = generateRefKey();
 
-        return ResponseEntity.ok().body("");
-        // return AuthenticationResponse.builder().token(jwtToken).build();
+        var activationCodeObj = ActivationCode
+                                .builder()
+                                .code(activationCode)
+                                .user(user)
+                                .isValid(true)
+                                .build();
+        activationCodeRepository.save(activationCodeObj);
+
+
+        System.out.println("************************************************************************************************************");
+        System.out.println(activationCode);
+        System.out.println("************************************************************************************************************");
+
+        try {
+            emailService.sendAccountVerificationMial(request.getEmail(), activationCode);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        
+
+        return new RegisterResponse("Account created", user);
     }
 
+
+    
+    public Object accountActivate(@Valid AccountAtivationRequest request) {
+
+        var existed = repository.findByEmail(request.getEmail());
+        
+        if (!existed.isPresent()){
+            throw new ApiRequestException("Invalid activation code");
+        }
+
+        var codeExisted = activationCodeRepository.findByCode(request.getCode());
+        if (!codeExisted.isPresent()){
+            throw new ApiRequestException("Invalid activation code");
+        }
+
+        var code = codeExisted.orElseThrow();
+        if (!code.isValid() ){
+            throw new ApiRequestException("Invalid activation code");
+        }
+
+        var user = existed.orElseThrow();
+        user.setIsVerify(true);
+        user.setIsActive(true);
+
+        code.setValid(false);
+        activationCodeRepository.save(code);
+        repository.save(user);
+        return new RegisterResponse("You account has been verify successfully", null);
+    }
+
+ 
+ 
     public AuthenticationResponse authlogin(AuthenticationRequest request) {
 
         var existed = repository.findByEmail(request.getEmail());
@@ -83,8 +140,14 @@ public class AuthService {
                 request.getEmail(), request.getPassword())
         );
 
-        // var user = repository.findByEmail(request.getEmail()).orElseThrow();
         var user = existed.orElseThrow();
+        if( !user.getIsVerify().equals(true)){
+            throw new ApiRequestException("Your account is not yet verified. Kindly verify to continue enjoying our service");
+        }
+        if( !user.getIsActive().equals(true)){
+            throw new ApiRequestException("Your account is disabled. Kindly reach out to the management to enable your account");
+        }
+        
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder().token((String) jwtToken).build();
 
@@ -97,13 +160,13 @@ public class AuthService {
         String generatedKey;
         do {
             generatedKey = generateUniqueKey();
-        } while (activationCodeRepository.existsByRefKey(generatedKey));
+        } while (activationCodeRepository.existsByCode(generatedKey));
         return generatedKey;
     }
 
     private String generateUniqueKey() {
         StringBuilder builder = new StringBuilder();
-        String baseString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        String baseString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
         builder.append(Long.toString(System.currentTimeMillis(), 36).substring(0, 2));
 
