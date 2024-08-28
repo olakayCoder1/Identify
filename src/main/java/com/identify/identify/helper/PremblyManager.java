@@ -1,7 +1,6 @@
 package com.identify.identify.helper;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import com.identify.identify.dto.ReturnResponse;
-import com.identify.identify.error.ApiRequestException;
 
 import org.springframework.stereotype.Component;
 
@@ -39,54 +37,45 @@ public class PremblyManager {
             headers.add("app-id", premblyAppId);
             return headers; 
         }
-    
 
+
+        public ReturnResponse verifyPhoneNumber(String phoneNumber, String country) {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("number", phoneNumber);
+            return verifyData(payload, "/phone_number");
+        }
     
+        public ReturnResponse verifyBVN(String bvn, String country) {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("number", bvn);
+            return verifyData(payload, "/bvn");
+        }
     
-        // @SuppressWarnings("unchecked")
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        public ReturnResponse verifyPhoneNumber(String ninNumber, String country) {
+        private ReturnResponse verifyData(Object payload, String endpoint) {
             try {
                 System.out.println("*******************************************");
-                Map<String, Object> requestData = new HashMap<>();
-                requestData.put("number", ninNumber);
-                HttpEntity<Object> requestEntity = new HttpEntity<>(requestData, requestHeaders());
-                
+                HttpEntity<Object> requestEntity = new HttpEntity<>(payload, requestHeaders());
+    
                 // Log URL and request details
-                String url = baseUrl + "/phone_number";
-                System.out.println("Request URL: " + url);
-                System.out.println("Request Entity: " + requestEntity);
-        
+                String url = baseUrl + endpoint;
+    
                 ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Map.class);
-        
+    
                 // Check if the response has a body
                 if (response.hasBody()) {
                     Map responseBody = response.getBody();
-                    System.out.println("Response Body: " + responseBody);
-        
+    
                     Boolean status = (Boolean) responseBody.get("status");
-                    System.out.println("Response status: " + status);
-        
                     String response_code = (String) responseBody.get("response_code");
-                    System.out.println("Response response_code: " + response_code);
-        
+    
                     if (status != null && status && "00".equals(response_code)) {
-                        // save record to db
                         Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
-                        System.out.println("Data: " + data);
                         return new ReturnResponse(status, response_code, data);
                     } else if (status != null && !status) {
-                        if ("01".equals(response_code)) {
-                            return new ReturnResponse(false, "Record not found for the provided number", null);
-                        } else if ("02".equals(response_code)) {
-                            return new ReturnResponse(false, "Service is currently not available", null);
-                        } else {
-                            System.out.println("Response response_code: " + response_code);
-                            return new ReturnResponse(false, "Verification can't be completed at the moment", null);
-                        }
+                        return handleErrorResponse(response_code);
                     }
                 }
-        
+    
                 return new ReturnResponse(false, "Verification can't be completed at the moment", null);
             } catch (HttpClientErrorException ex) {
                 System.out.println("HttpClientErrorException: " + ex.getMessage());
@@ -96,9 +85,17 @@ public class PremblyManager {
                 return new ReturnResponse(false, "An unexpected error occurred", null);
             }
         }
-        
-
+    
+        private ReturnResponse handleErrorResponse(String responseCode) {
+            if ("01".equals(responseCode)) {
+                return new ReturnResponse(false, "Record not found for the provided number", null);
+            } else if ("02".equals(responseCode)) {
+                return new ReturnResponse(false, "Service is currently not available", null);
+            } else {
+                System.out.println("Response response_code: " + responseCode);
+                return new ReturnResponse(false, "Verification can't be completed at the moment", null);
+            }
+        }
+    
     }
-    
-    
     
