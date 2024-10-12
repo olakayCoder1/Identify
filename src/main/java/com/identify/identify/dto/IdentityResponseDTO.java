@@ -11,7 +11,6 @@ public class IdentityResponseDTO {
     private boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private boolean active; // Assuming this is a field you want to include
 
     // Getters and Setters
     public Integer getId() {

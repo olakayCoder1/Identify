@@ -4,6 +4,7 @@ package com.identify.identify.dto;
 
 public class ReturnResponse {
 
+    private String detail;
     private String message;
     private Boolean status;
     private Object data; // This can be any type of data you want to include
@@ -21,6 +22,14 @@ public class ReturnResponse {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getDetail() {
+        return message;
+    }
+
+    public void setDetail(String message) {
+        this.detail = message;
     }
 
     public Boolean getStatus() {

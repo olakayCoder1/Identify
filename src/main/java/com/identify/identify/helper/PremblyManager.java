@@ -50,6 +50,19 @@ public class PremblyManager {
             payload.put("number", bvn);
             return verifyData(payload, "/bvn");
         }
+
+        public ReturnResponse verifyNIN(String bvn, String country) {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("number", bvn);
+            return verifyData(payload, "/nin");
+        }
+
+
+        public ReturnResponse verifyDriversLicense(String bvn, String country) {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("number", bvn);
+            return verifyData(payload, "/drivers_license");
+        }
     
         private ReturnResponse verifyData(Object payload, String endpoint) {
             try {
@@ -67,8 +80,11 @@ public class PremblyManager {
     
                     Boolean status = (Boolean) responseBody.get("status");
                     String response_code = (String) responseBody.get("response_code");
+
+                    System.out.println(response_code);
     
                     if (status != null && status && "00".equals(response_code)) {
+                        @SuppressWarnings("unchecked")
                         Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
                         return new ReturnResponse(status, response_code, data);
                     } else if (status != null && !status) {
